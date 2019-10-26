@@ -44,7 +44,8 @@ for($i = 0; ; $i++){
         break;
     }
     foreach($res as $transaction){
-    if(!$w->addTransaction($transaction['type'], $transaction['date'], $transaction['sum'], $transaction['hash_link'], $transaction['wallets_count'])){
+    if(!$w->addTransaction($transaction['type'], $transaction['date'], $transaction['sum'], $transaction['hash_link'], 0)){
+
         $w->setUpdate(-1);
         exit();
     }

@@ -29,7 +29,7 @@ class wallet
         $mysqli = $this->mysqli;
         $mysqli->query("update wallets set total_received = '$value' where id = $id");
     }
-    public function setTotalDescription($value){
+    public function setDescription($value){
         $this->description = $value;
         $id = $this->id;
         $mysqli = $this->mysqli;
@@ -61,7 +61,7 @@ class wallet
         $this->final_balance = $final_balance;
         $this->is_updating = 0;
         $this->last_update_offset = 0;
-        $this->mysqli->query("insert into wallets values (0,'$wallet', '$transactions_number', '$total_received', '$final_balance', 0, 0)");
+        $this->mysqli->query("insert into wallets values (0,'$wallet', '$transactions_number', '$total_received', '$final_balance', 0, 0, '')");
         $this->id = mysqli_fetch_row(
             $this->mysqli->query("
             select id from wallets order by id desc limit 1
@@ -77,6 +77,7 @@ class wallet
         while ($row = mysqli_fetch_array($q)) {
 
             $trs[] = [
+                'id' => $row[0],
                 'type' => $row[2],
                 'date' => $row[3],
                 'sum' => $row[4],
@@ -98,13 +99,21 @@ class wallet
         };
         return $trs;
     }
+    public function getTransactionsCount()
+    {
+        return count($this->transactions);
+    }
 
     public function addTransaction($type, $date, $sum, $hash_link, $wallets_count){
         $wallet_id = $this->id;
-        if(mysqli_num_rows($this->mysqli->query("select * from transactions where hash_link = '$hash_link'")))
+        if(mysqli_num_rows($this->mysqli->query("select * from transactions where hash_link = '$hash_link' and wallet_id = $wallet_id")))
             return 0;
         $this->mysqli->query("insert into transactions values (0,'$wallet_id','$type','$date', '$sum','$hash_link', '$wallets_count')");
+        $t_id = mysqli_fetch_row(
+            $this->mysqli->query("select id from transactions order by id desc limit 1")
+        )[0];
         $this->transactions[] = [
+            'id' =>$t_id,
             'type' => $type,
             'date' => $date,
             'sum' => $sum,

@@ -7,11 +7,28 @@ class wallet
     private $mysqli;
     public $id, $wallet, $transactions_number, $total_received, $final_balance, $is_updating, $last_update_offset, $transactions;
 
-    public function __wallet($mysqli)
+    public function wallet($mysqli)
     {
         $this->mysqli = $mysqli;
     }
-
+    public function setTransactionsNumber($value){
+        $this->transactions_number = $value;
+        $id = $this->id;
+        $mysqli = $this->mysqli;
+        $mysqli->query("update wallets set transactions_number = '$value' where id = $id");
+    }
+    public function setFinalBalance($value){
+        $this->transactions_number = $value;
+        $id = $this->id;
+        $mysqli = $this->mysqli;
+        $mysqli->query("update wallets set final_balance = '$value' where id = $id");
+    }
+    public function setTotalReceived($value){
+        $this->transactions_number = $value;
+        $id = $this->id;
+        $mysqli = $this->mysqli;
+        $mysqli->query("update wallets set total_received = '$value' where id = $id");
+    }
     public function createWalletById($id)
     {
         $this->id = $id;
@@ -77,7 +94,9 @@ class wallet
 
     public function addTransaction($type, $date, $sum, $hash_link, $wallets_count){
         $wallet_id = $this->id;
-        $this->mysqli->query("insert into transactions values (0,$wallet_id,$type,'$date', '$sum','$hash_link', $wallets_count)");
+        if(mysqli_num_rows($this->mysqli->query("select * from transactions where hash_link = '$hash_link'")))
+            return 0;
+        $this->mysqli->query("insert into transactions values (0,'$wallet_id','$type','$date', '$sum','$hash_link', '$wallets_count')");
         $this->transactions[] = [
             'type' => $type,
             'date' => $date,
@@ -86,7 +105,7 @@ class wallet
             'wallets_count' => $wallets_count
         ];
         $this->refreshTransactions();
-
+        return 1;
     }
     private function refreshTransactions(){
         $trs = $this->transactions;
@@ -103,6 +122,20 @@ class wallet
             }
         }
         $this->transactions = $trs;
+    }
+
+    public function setUpdate($offset){
+        $id = $this->id;
+        if($offset != -1){
+            $this->mysqli->query("update wallets set is_updating = 1, last_update_offset = $offset where id = $id");
+            $this->is_updating = 1;
+            $this->last_update_offset = $offset;
+
+        } else {
+            $this->mysqli->query("update wallets set is_updating = 0, last_update_offset = 0 where id = $id");
+            $this->is_updating = 0;
+            $this->last_update_offset = 0;
+        }
     }
 
 }

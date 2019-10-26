@@ -5,7 +5,7 @@ class wallet
 {
     /** @var Mysqli $mysqli */
     private $mysqli;
-    public $id, $wallet, $transactions_number, $total_received, $final_balance, $is_updating, $last_update_offset, $transactions;
+    public $id, $wallet, $transactions_number, $total_received, $final_balance, $is_updating, $last_update_offset, $transactions, $description;
 
     public function wallet($mysqli)
     {
@@ -18,16 +18,22 @@ class wallet
         $mysqli->query("update wallets set transactions_number = '$value' where id = $id");
     }
     public function setFinalBalance($value){
-        $this->transactions_number = $value;
+        $this->final_balance = $value;
         $id = $this->id;
         $mysqli = $this->mysqli;
         $mysqli->query("update wallets set final_balance = '$value' where id = $id");
     }
     public function setTotalReceived($value){
-        $this->transactions_number = $value;
+        $this->total_received = $value;
         $id = $this->id;
         $mysqli = $this->mysqli;
         $mysqli->query("update wallets set total_received = '$value' where id = $id");
+    }
+    public function setTotalDescription($value){
+        $this->description = $value;
+        $id = $this->id;
+        $mysqli = $this->mysqli;
+        $mysqli->query("update wallets set description = '$value' where id = $id");
     }
     public function createWalletById($id)
     {
@@ -40,6 +46,7 @@ class wallet
         $this->final_balance = $row[4];
         $this->is_updating = $row[5];
         $this->last_update_offset = $row[6];
+        $this->description = $row[7];
         $this->transactions = $this->getAllTransactions();
 
 

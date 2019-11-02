@@ -99,7 +99,8 @@ if ($data) {
             "Баланс: <b>$fb</b>\n\n" .
             "Описание: <i>$desc</i>\n";
         $array[] = [createCallbackData("Изменить описание", "editDescription.$wallet_id")];
-        $array[] = [createCallbackData("Обновить кошелек", "updateWallet.$wallet_id")];
+        $array[] = [createCallbackData("Обновить кошелек", "updateWallet.$name")];
+        $array[] = [createCallbackData("Удалить кошелек", "deleteWallet.$wallet_id")];
         $array[] = [createCallbackData("Выход", "exit")];
         editMessageText($token, $id, $message_id, $text, createReplyMarkup($array));
 
@@ -115,12 +116,12 @@ if ($data) {
         setLastMessage($mysqli, $data);
 
     } else if (stristr($data, 'updateWallet.')) {
-        $wallet_id = explode('.',$data);
-        $wallet_id = $wallet_id[1];
+        $wallet = explode('.',$data);
+        $wallet = $wallet_id[1];
         $text = "Кошелек обновляется";
         answerCallbackQuery($token, $callback_query_id, $text);
         sendMessageMain($token,$id,$text);
-        get_content("http://t.shn-host.ru/btc_monitor/worker.php?wallet_id=$wallet_id");
+        get_content("$URL/worker.php?wallet=$wallet");
     } else if (stristr($data, 'deleteWallet.')) {
         $wallet_id = explode('.',$data);
         $wallet_id = $wallet_id[1];
@@ -157,7 +158,7 @@ if ($data) {
         setLastMessage($mysqli, $data);
 
     } else if ($data == 'addWallet') {
-        $text = "Введи адрес нового кошелька";
+        $text = "Введи адрес нового кошелька(кошельков)";
         answerCallbackQuery($token, $callback_query_id, $text);
         editMessageText($token, $id, $message_id, $text,
             createReplyMarkup([
@@ -176,9 +177,17 @@ if ($data) {
     if ($message == '/start') {
         sendMessageMain($token, $id, "Привет.");
     } else if ($lastMessage == 'addWallet') {
-    $wallet = $message;
-    sendMessageMain($token,$id,"Кошелек добавлен");
-        get_content("http://t.shn-host.ru/btc_monitor/worker.php?wallet=$wallet");
+    $wallets = explode("\n", $message);
+    $c = 0;
+    foreach($wallets as $wallet){
+        $c++;
+        }
+        sendMessageMain($token,$id,"Кошельки добавлены в количистве: $c\n" .
+            json_encode($wallets));
+
+        foreach($wallets as $wallet){
+            get_content("$URL/worker.php?wallet=$wallet");
+        }
 
     } else
 
